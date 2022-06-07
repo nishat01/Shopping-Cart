@@ -1,72 +1,96 @@
-import { Location } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { CartItem } from 'src/app/models/cart-model';
-import { Product } from 'src/app/models/product.model';
-import { CartService } from 'src/app/services/cart.service';
-import { ProductService } from 'src/app/services/product.service';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Title }             from '@angular/platform-browser';
+import { ActivatedRoute, Router }    from '@angular/router';
+import { CartItem }          from 'src/app/models/cart.model';
+import { Product }           from 'src/app/models/product.model';
+import { CartService }       from 'src/app/services/cart.service';
+import { Location }          from '@angular/common';
+import { ShippingService }   from 'src/app/services/shipping.service';
+import { ProductService }    from 'src/app/services/product.service';
 
 @Component({
   selector: 'app-cart-view',
-  templateUrl: './cart-view.component.html',
-  styleUrls: ['./cart-view.component.css']
+  template: `
+  <div id="cart" class="container-lg container-fluid">
+    <h1 class="display-6"><a (click)="goBack()" class="back-btn fw-lighter text-dark text-decoration-none"><i class="bi bi-arrow-left-circle"></i></a> Cart</h1>
+      <app-cart-table [updatable]="true" (onCartUpdate)="cartUpdate($event)"></app-cart-table>
+    <div class="row align-items-start">
+      <div *ngIf="cart.length>0" class="col text-center">
+        <button routerLink="/checkout" class="btn btn-success btn-lg">Checkout</button>
+      <!-- goto: /checkout -->
+      </div>
+    </div>
+  </div>
+
+  `,
+  styles: [
+  ]
 })
 export class CartViewComponent implements OnInit {
-  cart: any[]
-  AllCartData: Product[] = [];
-  total: number = 0
-  constructor(private location: Location,
-    private cartService: CartService,
-    private productService: ProductService) { }
+  
+  product! : Product;
+  //recProducts  : Product[] = [];
+  cart  : CartItem[] = [];
+  items : CartItem[] = [];
+  
+  constructor(
+    private api   : CartService,
+    private productService   : ProductService,
+    private route : ActivatedRoute,
+    private title : Title,
+    private router: Router,
+    private location : Location,
+    private shipping : ShippingService
+  ) { }
 
   ngOnInit(): void {
-    this.getCart()
-  }
-
-  getCart() {
-    this.cartService.getCartItem().subscribe((response) => {
-      this.cart = response
-      this.cart.forEach((x) => {
-        this.getProductDetails(x.productId, x.qty)
-      })
-    }, (error) => console.log(error))
-  }
-  goBack() {
-    this.location.back()
-  }
-  getProductDetails(id: string, qty: number) {
-    this.productService.getProductById(id).subscribe((response) => {
-      response.map(x => {
-        x.qty = qty
-      })
-      this.AllCartData.push(response[0])
-      this.totalPrice()
-
-    }, (error) => console.log(error))
-  }
-  totalPrice() {
-    this.total = 0
-    this.AllCartData.map((x)=>{
-      this.total = this.total + (x.cost * x.qty)
+    this.api.getCart().subscribe({
+      next: (cart) => {
+        this.items = cart;
+        // if (cart != null) {
+        //   this.productService.getRecommendations().subscribe({
+        //     next: (products) => {
+        //       this.recProducts = products;
+        //       console.log(products);
+        //     }
+        //   });
+        // }
+      },
+      error: (error) => {
+     }
     })
+    
   }
+
   qtyAsNumber(item: CartItem) {
-    item.qty = +item.qty;
-    this.totalPrice()
-  }
+    item.qty = item.qty ? +item.qty : 0;
+  }  
 
-
-  updateCart(item: Product) {
-    this.cartService.updateCart(item, item.qty).subscribe((response) => {
-      alert('Updated Data Successfully')
-      this.cart = []
-      this.AllCartData = []
-      this.getCart()
-      // this.cart = response.map((updated) => {
-      //   const it = this.cart.find(it => updated.id === it.id);
-      //   updated.product = it!.product;
-      //   return updated;
-      // });
-      console.log('cart', this.cart)
-    })
+  cartUpdate(cart: CartItem[]) {
+    this.cart = cart;
+    // this.productService.getRecommendations().subscribe((prods) => {
+    //   this.recProducts = [];
+    //   for(let p of prods){
+    //     if (!cart.find(item => (item.id === p.id))){
+    //       this.recProducts.push(p);
+    //     }
+    //   }
+    // });
+    
   }
+  
+  goBack() {
+    this.location.back();
+  } 
+
+  // onClick() {
+  //   if (!this.shipping.shippingAddress) {
+  //       this.location.replaceState('/shipTo');
+  //       this.router.navigate(['/shipTo']);
+  //   } else {
+  //       this.router.navigate(["/checkout"]);
+  //      }
+  // }
+
 }
+

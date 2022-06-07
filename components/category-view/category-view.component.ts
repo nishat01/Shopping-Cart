@@ -1,62 +1,99 @@
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { ProductService } from 'src/app/services/product.service';
-import {Location} from '@angular/common';
-import { Category, Product } from 'src/app/models/product.model';
+import { Component, OnInit      } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { Category, Product      } from 'src/app/models/product.model';
+import { ProductService         } from 'src/app/services/product.service';
+import { Title                  } from '@angular/platform-browser';
+
 @Component({
   selector: 'app-category-view',
-  templateUrl: './category-view.component.html',
-  styleUrls: ['./category-view.component.css']
+  template: `
+  <div id="category" class="container-lg container-fluid">
+  <div class="row row-cols-1 row-cols-lg-4 g-4">
+    
+    <div *ngIf="category">
+      <app-category-card [category]="category" [isBackButton]="true"></app-category-card>
+    </div>
+    <div class="col col-lg-9">
+      <div id="product-columns">
+        <div id="product-list-column">
+          <div id="product-list-scroller">
+            <div id="product-list" class="list-group list-group-flush">            
+              <a class="list-group-item list-group-item-action product-card"
+                *ngFor="let product of products"
+                [ngClass]="{'active': selected && product.id === selected.id }"
+                [routerLink]="'/products/' + product.id">
+                {{ product.name }}
+              </a>              
+            </div>
+          </div>
+        </div>
+        <div id="product-info">                
+            <app-product-details [product]="selected"></app-product-details>         
+        </div>
+        
+      </div>
+    </div>
+  </div>
+  </div>
+
+  `,
+  styles: [
+  ]
 })
 export class CategoryViewComponent implements OnInit {
-  catalog: Category[];
-  selectedId: number;
-  selectedName: string;
-  products: Product[]
-  specificProduct: Product[]=[];
 
-  constructor(private activeRoute: ActivatedRoute,
+  category! : Category;
+  products  : Product[] = [];
+  selected! : Product;
+
+  constructor(
+    private api   : ProductService,
     private router: Router,
-    private api: ProductService,
-    private _location: Location) { }
+    private route : ActivatedRoute,
+    private title : Title) {
+  }
 
   ngOnInit(): void {
-    this.selectedId = Number(this.activeRoute.snapshot.paramMap.get('catId'))
-    this.getAllcatalog()
-    this.showCategory(this.selectedId)
-  }
-  showCategory(catId: number) {
-    this.api.getProductsByCategory(catId).subscribe({
-      next: (category) => {
-         console.log('category',category)
-         this.products  = category
-      },
-      error: (error) => {
+    
+    this.route.paramMap.subscribe((params) => {
+      if (params.has('catId')) {
+        this.showCategory(+params.get('catId')!);       
+      } else if (params.has('prodId')) {
+        this.showProduct(params.get('prodId')!); // assign product to this.selected
+      } else {
         this.router.navigate(['/']);
       }
     });
   }
 
-  backCatlog() {
-    this._location.back();
+  showCategory(catID : number){
+    this.api.getCategoryById(catID).subscribe({
+      next: (category) => {
+        this.category = category;
+        //console.log(category);
+        this.title.setTitle(this.selected ? this.selected.name : category.name);
+        this.api.getProductsByCategory(catID).subscribe((products) => {
+            this.products = products;
+          })
+      },
+      error: (error) => {
+        this.router.navigate(['/']);
+      }      
+    });
   }
-  getAllcatalog() {
-    this.api.getCatalog().subscribe((resposne:Category[])=>{
-      console.log('resposne',resposne)
 
-      this.catalog = resposne
-      this.catalog = this.catalog.filter(x=>x.id == this.selectedId)
-      this.selectedName = this.catalog[0].name
-    },(error)=>{
-      console.log(error)
-    })
+  showProduct(prodId : string){
+    this.api.getProductById(prodId).subscribe({
+      next: (product) => {
+        this.selected = product;
+        //console.log(product);
+        this.title.setTitle(this.selected ? this.selected.name : product.name);
+        this.showCategory(product.catId);
+      },
+      error: (error) => {
+        this.router.navigate(['/']);
+      }     
+    });
   }
-  specificproductDetails(id) {
-    this.api.getProductById(id).subscribe((resposne:Product[])=>{
-      console.log('specificProduct',resposne)
-      this.specificProduct = resposne
-    },(error)=>{
-      console.log(error)
-    })
-  }
+
 }

@@ -1,59 +1,104 @@
-import { Location } from '@angular/common';
-import { Component, Input, OnInit } from '@angular/core';
-import { CartItem } from 'src/app/models/cart-model';
-import { Product } from 'src/app/models/product.model';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { CartItem } from 'src/app/models/cart.model';
 import { CartService } from 'src/app/services/cart.service';
-import { ProductService } from 'src/app/services/product.service';
 
 @Component({
   selector: 'app-cart-table',
-  templateUrl: './cart-table.component.html',
-  styleUrls: ['./cart-table.component.css']
+  template: `
+    <table id="cart-table" class="table">
+    <thead>
+      <tr>
+        <th scope="col">ID</th>
+        <th scope="col">Name</th>
+        <th scope="col">Cost</th>
+        <th scope="col">Quantity</th>
+        <th scope="col">Subtotal</th>
+        <th scope="col" *ngIf="updatable">Update</th>
+      </tr>
+    </thead>
+    <tbody class="table-hover">
+      <tr *ngFor="let item of items">
+        <td scope="row">{{ item.id }}</td>
+        <td>{{ item.product!.name }}</td>
+        <td>{{ item.product!.cost | currency }}</td>
+        <td>
+          <ng-template [ngIf]="updatable" [ngIfElse]="notUpdatable">
+          <input type="text" class="qty-input form-control" [(ngModel)]="item.qty" (ngModelChange)="qtyAsNumber(item)">
+          </ng-template>
+          <ng-template #notUpdatable>
+           {{ item.qty }}
+          </ng-template>
+        </td>
+        <td>{{ item.product!.cost * item.qty | currency }}</td>
+        <td *ngIf="updatable">
+          <button type="button" tabindex="0"
+              class="update-cart btn btn-primary"
+              (click)="updateCart(item)">Update</button>
+        </td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <th scope="col"></th>
+        <th scope="col"></th>
+        <th scope="col"></th>
+        <th scope="col"></th>
+        <!-- <div *ngFor="let item of items">{{getTotal(items)}}</div> -->
+        <th scope="col">{{getTotal(items) | currency}}</th>
+        <th scope="col" *ngIf="updatable"></th>
+      </tr>
+    </tfoot>
+  </table>
+  `,
+  styles: [
+  ]
 })
 export class CartTableComponent implements OnInit {
-  items: CartItem[] = [];
-  total: number = 0;
-  cart: any[]
-  AllCartData: Product[] = [];
-  constructor(private cartService: CartService,
-    private location: Location,
-    private productService: ProductService) { }
+
   @Input() updatable: boolean = false;
+  @Output() onCartUpdate = new EventEmitter<CartItem[]>();
+
+  total = 0;
+  items: CartItem[] = [];
+
+  constructor(private cart: CartService) { }
+
   ngOnInit(): void {
-    this.getCart()
-  }
-  getCart() {
-    this.cartService.getCartItem().subscribe((response) => {
-      this.cart = response
-      this.cart.forEach((x) => {
-        this.getProductDetails(x.productId, x.qty)
-      })
-    }, (error) => console.log(error))
-  }
-  goBack() {
-    this.location.back()
-  }
-  getProductDetails(id: string, qty: number) {
-    this.productService.getProductById(id).subscribe((response) => {
-      response.map(x => {
-        x.qty = qty
-      })
-      this.AllCartData.push(response[0])
-      this.totalPrice()
+    this.cart.getCart().subscribe((items) => {
+      this.items = items;
+      this.onCartUpdate.emit(this.items);
+  });
+    
+}
 
-    }, (error) => console.log(error))
-  }
-  qtyAsNumber(item: CartItem) {
-    item.qty = +item.qty;
-    this.totalPrice()
-  }
+qtyAsNumber(item: CartItem) {
+  item.qty = +item.qty;
+}
 
+updateCart(item: CartItem) {
+  this.cart.updateCart(item).subscribe((items) => {
+    alert('Cart Updated');
+    
+    this.items = items.map((updated) => {
+      const it = this.items.find(it => updated.id === it.id);
+      updated.product = it!.product;
+      return updated;
+    });
+    this.onCartUpdate.emit(this.items); 
+  });
+}
 
-  totalPrice() {
-    this.total = 0
-    this.AllCartData.map((x)=>{
-      this.total = this.total + (x.cost * x.qty)
-    })
-  }
+getTotal(items: CartItem[]){
+  let subTotal = 0;
+  let total = 0;
+  if (this.items){
+    for( let item of items) {
+      subTotal = item.product!.cost * item.qty;
+      total = total + subTotal;
+      this.total = total;      
+    };
+  };
+  return total;
+}
 
 }

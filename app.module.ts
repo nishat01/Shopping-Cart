@@ -1,54 +1,59 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule, Title } from '@angular/platform-browser';
-import { HttpClientModule     } from '@angular/common/http';
-import { RouterModule         } from '@angular/router';
-import { FormsModule          } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
+import { RouterModule } from '@angular/router';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
-import { AppComponent } from './app.component';
-import { NavbarComponent } from './components/navbar/navbar.component';
-import { CatalogViewComponent } from './components/catalog-view/catalog-view.component';
-import { CatagoryCardComponent } from './components/catagory-card/catagory-card.component';
-import { CatagoryViewComponent } from './components/catagory-view/catagory-view.component';
+import { AppComponent            } from './app.component';
+import { NavbarComponent         } from './components/navbar/navbar.component';
+import { CatalogViewComponent    } from './components/catalog-view/catalog-view.component';
+import { CategoryCardComponent   } from './components/category-card/category-card.component';
+import { CategoryViewComponent   } from './components/category-view/category-view.component';
 import { ProductDetailsComponent } from './components/product-details/product-details.component';
-import { CartViewComponent } from './components/cart-view/cart-view.component';
-import { ShipToViewComponent } from './components/ship-to-view/ship-to-view.component';
-import { CheckoutViewComponent } from './components/checkout-view/checkout-view.component';
-import { FinishViewComponent } from './components/finish-view/finish-view.component';
-import { CartTableComponent } from './components/cart-table/cart-table.component';
+import { CartViewComponent       } from './components/cart-view/cart-view.component';
+import { ShipToViewComponent     } from './components/ship-to-view/ship-to-view.component';
+import { CheckoutViewComponent   } from './components/checkout-view/checkout-view.component';
+import { FinishViewComponent     } from './components/finish-view/finish-view.component';
+import { CartTableComponent      } from './components/cart-table/cart-table.component';
+import { LoginComponent }         from './components/login/login.component';
 
 @NgModule({
+  imports: [
+    BrowserModule,
+    HttpClientModule,
+    FormsModule,            // template-driven forms
+    ReactiveFormsModule,    // model-driven (reactive) forms
+    RouterModule.forRoot([
+      { path: 'catalog',          component: CatalogViewComponent },
+      { path: 'category/:catId',  component: CategoryViewComponent },
+      { path: 'products/:prodId', component: CategoryViewComponent },
+      { path: 'cart',             component: CartViewComponent },
+      { path: 'shipTo',           component: ShipToViewComponent },
+      { path: 'login  ',          component: LoginComponent },
+      { path: 'checkout',         component: CheckoutViewComponent },
+      { path: 'finish',           component: FinishViewComponent },     
+      { path: '',   pathMatch: 'full', redirectTo: '/catalog' },
+      { path: '**', pathMatch: 'full', redirectTo: '/catalog' },
+    ])
+  ],
+  bootstrap: [AppComponent],
+  providers: [
+    Title
+  ],
   declarations: [
     AppComponent,
     NavbarComponent,
     CatalogViewComponent,
-    CatagoryCardComponent,
-    CatagoryViewComponent,
+    CategoryCardComponent,
+    CategoryViewComponent,
     ProductDetailsComponent,
     CartViewComponent,
     ShipToViewComponent,
     CheckoutViewComponent,
     FinishViewComponent,
-    CartTableComponent
-  ],
-  imports: [
-    BrowserModule,
-    HttpClientModule,
-    FormsModule, // template-driven forms
-    RouterModule.forRoot([
-      { path: 'catalog',          component: CatalogViewComponent },
-      { path: 'category/:catId',  component: CatagoryViewComponent },
-      { path: 'products/:prodId', component: CatagoryViewComponent },
-      { path: 'cart',             component: CartViewComponent },
-      { path: 'shipTo',           component: ShipToViewComponent },
-      { path: 'checkout',         component: CheckoutViewComponent },
-      { path: 'finish',           component: FinishViewComponent },
-      { path: '',   pathMatch: 'full', redirectTo: '/catalog' },
-      { path: '**', pathMatch: 'full', redirectTo: '/catalog' },
-    ])
-  ],
-  providers: [
-    Title
-  ],
-  bootstrap: [AppComponent],
+    CartTableComponent,
+    LoginComponent
+  ]
 })
 export class AppModule { }
+

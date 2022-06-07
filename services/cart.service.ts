@@ -2,9 +2,11 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, zip } from 'rxjs';
 
-import { CartItem       } from '../models/cart.model';
+import { CartItem,      } from '../models/cart.model';
 import { Product        } from '../models/product.model';
 import { ProductService } from './product.service';
+import { Shipping } from '../models/shipping.model';
+import { ShippingService } from './shipping.service';
 
 @Injectable({
   providedIn: 'root'
@@ -71,6 +73,7 @@ export class CartService {
   addToCart(product: Product, qty: number = 1) {
     return new Observable<CartItem[]>((subscriber) => {
       this.getCartItem().subscribe((items) => {
+        console.log(items);
         const item    = items.find(it => it.id === product.id);
         const updater = this.updateCart(item ?? product, item ? item.qty + qty : qty);
         updater.subscribe((updated) => {
@@ -80,7 +83,18 @@ export class CartService {
       });
     });
   }
+
+  checkoutCart(shippingAddrress : ShippingService): Observable<CartItem[]> {
+    const url = '/api/cart/checkout';
+    console.log(shippingAddrress);
+    const response = this.http.post<CartItem[]>(url, shippingAddrress);
+    response.subscribe({
+      next: (value) => {
+        console.log(value);
+      }
+    });  
+    return response;
+    
+  }
 }
-
-
 
