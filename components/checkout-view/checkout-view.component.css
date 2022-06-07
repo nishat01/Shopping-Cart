@@ -1,0 +1,7 @@
+.center {
+  justify-content: center;
+  display: flex;
+}
+.fsize {
+  font-size: 40px;
+}

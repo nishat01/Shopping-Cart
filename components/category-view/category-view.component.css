@@ -1,0 +1,28 @@
+.card-bs {
+  background: #212529;
+  height: 300px;
+
+}
+
+.cardps {
+  justify-content: center;
+    text-align: center;
+}
+.head {
+  color: white;
+  font-weight: 100;
+}
+.asp {
+  justify-content: center;
+    top: 40%;
+    left: 20%;
+    position: absolute;
+}
+
+.product-div {
+  height: 100vh;
+  overflow-y: scroll;
+}
+.product-line {
+  border-bottom: 1px solid lightgray;
+}

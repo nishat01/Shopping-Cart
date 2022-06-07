@@ -1,0 +1,38 @@
+
+<div class="container">
+  <div class="row d-flex">
+    <span class="fsize"> <i class="bi bi-arrow-left-circle fsize mx-4" (click)="goBack()"></i>
+      Checkout</span>
+  </div>
+  <div class="row mt-4">
+    <div class="col-lg-9">
+      <app-cart-table></app-cart-table>
+
+    </div>
+    <div class="col col-lg-3" *ngIf="shippingAddress">
+      <div class="card">
+        <div class="card-header text-white bg-primary">Shipping Address</div>
+        <div class="card-body">
+          <p class="card-text">
+            <b>{{ shippingAddress.recipient }}</b><br>
+            {{ shippingAddress.streetAddress }}<br>
+            <span *ngIf="shippingAddress.streetAddress2">{{ shippingAddress.streetAddress2 }}<br></span>
+            {{ shippingAddress.city }}, {{ shippingAddress.province.code }}<br>
+            {{ shippingAddress.postalCode }}
+          </p>
+        </div>
+        <div class="card-footer">
+          {{ shippingAddress.delivery }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class=" mt-4 center">
+    <button class="btn btn-primary" [routerLink]="['/']" routerLinkActive="router-link-active" >Continue Shopping</button>
+    <button class="btn btn-success mx-4" [routerLink]="['/finish']" routerLinkActive="router-link-active" >Checkout</button>
+  </div>
+</div>
+
+
+

@@ -1,0 +1,54 @@
+<div class="container">
+  <div class="row d-flex">
+    <span class="fsize"> <i class="bi bi-arrow-left-circle fsize mx-4" (click)="goBack()"></i>
+      Cart</span>
+  </div>
+
+  <div class="row">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Cost</th>
+          <th>Quantity</th>
+          <th>SubTotal</th>
+          <th>Update</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of AllCartData">
+          <td>{{item.id}}</td>
+          <td>{{item.name}}</td>
+          <td>{{item.cost | currency}}</td>
+          <td>
+
+              <input type="text" class="qty-input form-control" [(ngModel)]="item.qty" (ngModelChange)="qtyAsNumber(item)">
+
+
+          </td>
+          <td>{{ item.cost * item.qty | currency }}</td>
+          <td >
+            <button type="button" tabindex="0"
+                    class="update-cart btn btn-primary"
+                    (click)="updateCart(item)">Update</button>
+          </td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <th scope="col"></th>
+          <th scope="col"></th>
+          <th scope="col"></th>
+          <th scope="col"></th>
+          <th scope="col">{{ total | currency }}</th>
+          <th scope="col" ></th>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <div class="center mt-4">
+    <button class="btn btn-success" [routerLink]="['/checkout']" routerLinkActive="router-link-active" >Checkout</button>
+  </div>
+</div>
